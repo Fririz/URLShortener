@@ -32,7 +32,7 @@ func NewLinkRepository(storagePath string) (*LinkRepository, error) {
 	query := `
     CREATE TABLE IF NOT EXISTS links (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        url TEXT DISTINCT NOT NULL,
+        url TEXT UNIQUE NOT NULL,
         slug TEXT NOT NULL,
         created_at TEXT NOT NULL,
         visits INTEGER NOT NULL DEFAULT 0
@@ -69,8 +69,8 @@ func (lr *LinkRepository) GetLinkById(id int) (*domain.Link, error) {
 	return link, nil
 }
 
-func (lr *LinkRepository) GetLastId() (uint64, error) {
-	var lastId uint64
+func (lr *LinkRepository) GetLastId() (int, error) {
+	var lastId int
 	query := "SELECT COALESCE(MAX(id), 0) FROM links"
 
 	err := lr.db.QueryRow(query).Scan(&lastId)

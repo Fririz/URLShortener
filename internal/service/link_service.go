@@ -9,9 +9,9 @@ import (
 )
 
 type LinkRepository interface {
-	AddLink(link domain.Link) error
+	AddLink(link *domain.Link) error
 	GetLinkById(id int) (*domain.Link, error)
-	GetLastId() (uint64, error)
+	GetLastId() (int, error)
 }
 
 type LinkService struct {
@@ -30,14 +30,36 @@ func NewLinkService(lr LinkRepository) (*LinkService, error) {
 	}, nil
 }
 
-func (ls *LinkService) CreateLink(linkDto dto.LinkDto) (dto.LinkDto, error) {
+func (ls *LinkService) CreateLink(linkDto dto.LinkDto) (string, error) {
+
 	newId := atomic.AddUint64(&ls.currentId, 1)
-	slug := ConvertIdToHex(uint64(newId))
-	link := domain.Link{ID: int(newId), URL: linkDto.Url, Slug: slug, CreatedAt: time.Now().String()}
-	err := ls.lr.AddLink(link)
-	linkResponse := dto.LinkDto{Url: "localhost:8080/" + slug}
-	if err != nil {
-		return linkResponse, err
+
+	slug := ConvertIdToHex(newId)
+
+	link := &domain.Link{
+		ID:        int(newId),
+		URL:       linkDto.Url,
+		Slug:      slug,
+		CreatedAt: time.Now().String(),
 	}
-	return linkResponse, nil
+
+	err := ls.lr.AddLink(link)
+	if err != nil {
+		return "", err
+	}
+
+	return slug, nil
+}
+
+func (ls *LinkService) GetLinkBySlug(slug string) (string, error) {
+	id, err := ConvertHexToId(slug)
+	if err != nil {
+		return "", err
+	}
+
+	link, err := ls.lr.GetLinkById(id)
+	if err != nil {
+		return "", err
+	}
+	return link.URL, nil
 }
