@@ -47,24 +47,35 @@ func NewLinkRepository(storagePath string) (*LinkRepository, error) {
 }
 
 func (lr *LinkRepository) AddLink(link *domain.Link) error {
-	query := "INSERT INTO links (url, slug, created_at) VALUES (?, ?, ?)"
-	_, err := lr.db.Exec(query, link.URL, link.Slug, link.CreatedAt)
+	query := "INSERT INTO links (id, url, slug, created_at) VALUES (?, ?, ?, ?)"
+	_, err := lr.db.Exec(query, link.ID, link.URL, link.Slug, link.CreatedAt)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (lr *LinkRepository) GetLinkById(id string) (*domain.Link, error) {
+func (lr *LinkRepository) GetLinkById(id int) (*domain.Link, error) {
 	link := &domain.Link{}
 	query := `SELECT id, url, slug, created_at, visits FROM links WHERE id = ?`
 	row := lr.db.QueryRow(query, id)
 	err := row.Scan(&link.ID, &link.URL, &link.Slug, &link.CreatedAt, &link.Visits)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, fmt.Errorf("link with id %s not found", id)
+			return nil, fmt.Errorf("link with id %d not found", id)
 		}
 		return nil, err
 	}
 	return link, nil
+}
+
+func (lr *LinkRepository) GetLastId() (uint64, error) {
+	var lastId uint64
+	query := "SELECT COALESCE(MAX(id), 0) FROM links"
+
+	err := lr.db.QueryRow(query).Scan(&lastId)
+	if err != nil {
+		return 0, err
+	}
+	return lastId, nil
 }

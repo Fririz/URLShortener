@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-func ConvertIdToHex(id int) string {
+func ConvertIdToHex(id uint64) string {
 	number := uint64(id)
 	bytesContainer := make([]byte, 8)
 	binary.BigEndian.PutUint64(bytesContainer, number)
