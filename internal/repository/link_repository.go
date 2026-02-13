@@ -62,7 +62,7 @@ func (lr *LinkRepository) GetLinkById(id string) (*domain.Link, error) {
 	err := row.Scan(&link.ID, &link.URL, &link.Slug, &link.CreatedAt, &link.Visits)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, fmt.Errorf("link with id %d not found", id)
+			return nil, fmt.Errorf("link with id %s not found", id)
 		}
 		return nil, err
 	}
