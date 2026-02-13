@@ -26,6 +26,9 @@ func main() {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("POST /links", linkHdl.CreateShortLink)
+	mux.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "index.html")
+	})
 	mux.HandleFunc("GET /{link}", linkHdl.GetFullUrl)
 
 	handlerWithLogging := middleware.LoggingMiddleware(mux)
