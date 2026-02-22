@@ -2,17 +2,40 @@ package service
 
 import (
 	"fmt"
-	"strconv"
+	"strings"
 )
 
-func ConvertIdToHex(id uint64) string {
-	return fmt.Sprintf("%x", id)
+const base62Chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+func ConvertIdToBase62(id uint64) string {
+	if id == 0 {
+		return string(base62Chars[0])
+	}
+
+	var b [11]byte
+	i := len(b)
+
+	for id > 0 {
+		i--
+		b[i] = base62Chars[id%62]
+		id /= 62
+	}
+
+	return string(b[i:])
 }
 
-func ConvertHexToId(hexId string) (int, error) {
-	number, err := strconv.ParseUint(hexId, 16, 64)
-	if err != nil {
-		return 0, fmt.Errorf("invalid hex string: %w", err)
+
+func ConvertBase62ToId(base62 string) (int, error) {
+	var id uint64
+
+	for _, char := range base62 {
+		index := strings.IndexRune(base62Chars, char)
+		if index == -1 {
+			return 0, fmt.Errorf("invalid base62 string: invalid character '%c'", char)
+		}
+		
+		id = id*62 + uint64(index)
 	}
-	return int(number), nil
+
+	return int(id), nil
 }

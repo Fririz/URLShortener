@@ -31,10 +31,9 @@ func NewLinkService(lr LinkRepository) (*LinkService, error) {
 }
 
 func (ls *LinkService) CreateLink(linkDto dto.LinkDto) (string, error) {
-
 	newId := atomic.AddUint64(&ls.currentId, 1)
 
-	slug := ConvertIdToHex(newId)
+	slug := ConvertIdToBase62(newId)
 
 	link := &domain.Link{
 		ID:        int(newId),
@@ -52,7 +51,7 @@ func (ls *LinkService) CreateLink(linkDto dto.LinkDto) (string, error) {
 }
 
 func (ls *LinkService) GetLinkBySlug(slug string) (string, error) {
-	id, err := ConvertHexToId(slug)
+	id, err := ConvertBase62ToId(slug)
 	if err != nil {
 		return "", err
 	}
@@ -61,5 +60,6 @@ func (ls *LinkService) GetLinkBySlug(slug string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	
 	return link.URL, nil
 }
